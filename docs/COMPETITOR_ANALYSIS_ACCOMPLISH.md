@@ -7,6 +7,16 @@
 **Model**: Bring-your-own API key or local models (Ollama)
 **Platforms**: macOS (Apple Silicon), Windows 11
 **Architecture**: Electron + React + OpenCode CLI
+**Latest Version**: 0.3.8 (as of Feb 2026)
+**GitHub**: https://github.com/accomplish-ai/accomplish
+
+### Recent Updates (Feb 2026)
+- ✅ Multi-language support (8 languages)
+- ✅ Custom skills/workflows
+- ✅ Tool connections (Notion, Google Drive, Dropbox)
+- ✅ 15+ model providers supported
+- ✅ Browser automation workflows
+- ✅ Skill learning capabilities
 
 ---
 
@@ -18,9 +28,11 @@
 | **Open Source** | ✅ Yes (MIT) | ✅ Yes |
 | **API Costs** | BYO key (you pay) | Included in hosting |
 | **Local Models** | ✅ Ollama, LM Studio | ✅ Ollama support |
-| **Browser Automation** | ✅ Yes | ✅ Yes (browser-use skill) |
-| **File Management** | ✅ Yes | ✅ Yes |
+| **Browser Automation** | ✅ Yes (research, forms) | ✅ Yes (browser-use skill) |
+| **File Management** | ✅ Yes (local files) | ✅ Yes |
 | **Document Creation** | ✅ Yes | ✅ Yes |
+| **Custom Skills** | ✅ Yes (workflows) | ✅ Yes (ClawHub skills) |
+| **Tool Connections** | ✅ Notion, Drive, Dropbox | ✅ Extensible via skills |
 | **Multi-Agent** | ❌ No | ✅ 6-agent system |
 | **WHMCS Integration** | ❌ No | ✅ Yes (billing) |
 | **Customer Dashboard** | ❌ No | ✅ Yes |
@@ -29,6 +41,7 @@
 | **Rate Limiting** | ❌ No | ✅ Token bucket |
 | **Real-time Coordination** | ❌ No | ✅ Redis Pub/Sub |
 | **Skills Marketplace** | ❌ No | ✅ ClawHub integration |
+| **Always-On** | ❌ Desktop only | ✅ 24/7 VPS operation |
 
 ---
 
@@ -36,10 +49,15 @@
 
 ### Accomplish AI Strengths:
 1. **Desktop-first** - Runs locally, no server needed
-2. **Simple setup** - Download and run
-3. **No subscription** - BYO API key
+2. **Simple setup** - Download and run (2 minutes)
+3. **No subscription** - BYO API key, no monthly fees
 4. **File management focus** - Strong at local file operations
 5. **Cross-platform** - macOS + Windows
+6. **Custom skills** - Save workflows as reusable skills
+7. **Browser automation** - Research and form entry
+8. **Tool connections** - Notion, Google Drive, Dropbox
+9. **Multi-language** - 8 language support
+10. **15+ model providers** - Very flexible
 
 ### OpenClaw Hosting Strengths:
 1. **Managed hosting** - We handle infrastructure
