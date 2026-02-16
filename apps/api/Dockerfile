@@ -15,7 +15,8 @@ COPY turbo.json ./
 # Copy all package.json files from workspace
 COPY apps/api/package*.json ./apps/api/
 COPY apps/web/package*.json ./apps/web/
-COPY packages/*/package*.json ./packages/*/
+COPY packages/db/package*.json ./packages/db/
+COPY packages/shared/package*.json ./packages/shared/
 
 # Install dependencies
 RUN pnpm install --force
