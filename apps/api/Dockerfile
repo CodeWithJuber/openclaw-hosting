@@ -18,7 +18,7 @@ COPY apps/web/package*.json ./apps/web/
 COPY packages/*/package*.json ./packages/*/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --force
 
 # Copy source code
 COPY . .
