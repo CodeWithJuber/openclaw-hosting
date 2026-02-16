@@ -1,0 +1,16 @@
+{
+  "name": "github-integration",
+  "version": "1.0.0",
+  "description": "GitHub API integration skill for OpenClaw agents",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.0",
+    "dotenv": "^16.4.0"
+  },
+  "keywords": ["github", "git", "api", "integration", "automation"],
+  "author": "OpenClaw",
+  "license": "MIT"
+}

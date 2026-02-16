@@ -1,0 +1,50 @@
+{
+  "name": "@openclaw/skill-web-automation",
+  "version": "1.0.0",
+  "description": "Comprehensive web automation and scraping toolkit for OpenClaw agents",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src/ examples/",
+    "example:basic": "node examples/basic-scraping.js",
+    "example:form": "node examples/form-automation.js",
+    "example:session": "node examples/session-management.js",
+    "example:proxy": "node examples/proxy-rotation.js",
+    "example:screenshot": "node examples/screenshot-pdf.js",
+    "install:browsers": "npx playwright install chromium firefox webkit"
+  },
+  "keywords": [
+    "web-scraping",
+    "browser-automation",
+    "playwright",
+    "puppeteer",
+    "data-extraction",
+    "form-automation",
+    "proxy-rotation",
+    "stealth",
+    "captcha-solving"
+  ],
+  "author": "OpenClaw",
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.41.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "proxy-agent": "^6.3.1",
+    "axios": "^1.6.5",
+    "cheerio": "^1.0.0-rc.12",
+    "user-agents": "^1.1.124",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "eslint": "^8.56.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openclaw/skills/web-automation"
+  }
+}

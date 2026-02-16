@@ -1,0 +1,59 @@
+{
+  "name": "@openclaw/skill-api-integration",
+  "version": "1.0.0",
+  "description": "Comprehensive API integration skill for REST and GraphQL with authentication, rate limiting, caching, and common service integrations",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "openclaw",
+    "skill",
+    "api",
+    "rest",
+    "graphql",
+    "http",
+    "axios",
+    "fetch",
+    "oauth",
+    "webhook",
+    "rate-limiting",
+    "caching"
+  ],
+  "dependencies": {
+    "axios": "^1.6.0",
+    "axios-retry": "^4.0.0",
+    "graphql": "^16.8.0",
+    "graphql-request": "^6.1.0",
+    "node-cache": "^5.1.2",
+    "p-retry": "^6.2.0",
+    "p-throttle": "^6.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "crypto-js": "^4.2.0",
+    "express": "^4.18.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/crypto-js": "^4.2.1",
+    "typescript": "^5.3.0",
+    "jest": "^29.7.0",
+    "eslint": "^8.55.0"
+  },
+  "peerDependencies": {
+    "openclaw": ">=1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openclaw/skills/api-integration"
+  }
+}
