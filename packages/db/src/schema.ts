@@ -34,7 +34,7 @@ export const users = pgTable("users", {
   firebase_uid: varchar("firebase_uid", { length: 128 }).unique(),
   display_name: varchar("display_name", { length: 255 }),
   avatar_url: text("avatar_url"),
-  reseller_id: uuid("reseller_id").references(() => users.id),
+  reseller_id: uuid("reseller_id"),
   metadata: jsonb("metadata"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow(),
