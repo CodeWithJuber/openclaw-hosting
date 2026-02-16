@@ -1,0 +1,59 @@
+{
+  "name": "deepcode-integration",
+  "version": "1.0.0",
+  "description": "Integrate DeepCode code generation with OpenClaw Hosting deployment",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "deepcode",
+    "openclaw",
+    "code-generation",
+    "deployment",
+    "ai",
+    "agent"
+  ],
+  "author": "OpenClaw Team",
+  "license": "MIT",
+  "dependencies": {
+    "@openclaw/sdk": "^1.0.0",
+    "axios": "^1.6.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  },
+  "openclaw": {
+    "skill": {
+      "name": "DeepCode Integration",
+      "description": "Generate code with DeepCode and deploy with OpenClaw",
+      "version": "1.0.0",
+      "commands": [
+        {
+          "name": "text2web",
+          "description": "Generate frontend from text description"
+        },
+        {
+          "name": "text2backend",
+          "description": "Generate backend API from text description"
+        },
+        {
+          "name": "paper2code",
+          "description": "Convert research paper to production code"
+        },
+        {
+          "name": "fullstack",
+          "description": "Generate complete full-stack application"
+        }
+      ]
+    }
+  }
+}
