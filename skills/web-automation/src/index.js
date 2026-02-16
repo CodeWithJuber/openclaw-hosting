@@ -724,4 +724,36 @@ class WebAutomation {
   }
 }
 
-module.exports = { WebAutomation };
+// Export all modules
+const { 
+  WebAutomationError,
+  NavigationError,
+  ElementNotFoundError,
+  TimeoutError,
+  ProxyError,
+  CaptchaError,
+  ValidationError,
+  withRetry,
+  CircuitBreaker,
+  RateLimiter
+} = require('./errors');
+
+const { ProxyManager } = require('./proxy-manager');
+
+const utils = require('./utils');
+
+module.exports = {
+  WebAutomation,
+  WebAutomationError,
+  NavigationError,
+  ElementNotFoundError,
+  TimeoutError,
+  ProxyError,
+  CaptchaError,
+  ValidationError,
+  withRetry,
+  CircuitBreaker,
+  RateLimiter,
+  ProxyManager,
+  utils
+};
