@@ -1,4 +1,4 @@
-# Production Docker Compose - Using Pre-built Images
+# Production Docker Compose with Pre-built Images
 version: '3.8'
 
 services:
@@ -51,11 +51,10 @@ services:
       - openclaw-network
     restart: unless-stopped
 
-  # API Server - Node.js directly
+  # API Server - Using pre-built image
   api:
-    image: node:22-alpine
+    image: ghcr.io/codewithjuber/openclaw-hosting/api:${IMAGE_TAG:-latest}
     container_name: openclaw-api
-    working_dir: /app
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://openclaw:${DB_PASSWORD:-openclaw_secure_password}@postgres:5432/openclaw_hosting
@@ -63,16 +62,9 @@ services:
       - PORT=2222
       - HOST=0.0.0.0
     volumes:
-      - .:/app
-      - /app/node_modules
       - ./secrets:/app/secrets:ro
     ports:
       - "2222:2222"
-    command: >
-      sh -c "npm install -g pnpm && 
-             pnpm install --force && 
-             pnpm --filter api build && 
-             pnpm --filter api start"
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,13 +78,10 @@ services:
         limits:
           memory: 1G
 
-  # Dashboard - Nginx serving static files
+  # Dashboard - Using pre-built image
   dashboard:
-    image: nginx:alpine
+    image: ghcr.io/codewithjuber/openclaw-hosting/web:${IMAGE_TAG:-latest}
     container_name: openclaw-dashboard
-    volumes:
-      - ./apps/web/dist:/usr/share/nginx/html:ro
-      - ./apps/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
       - "5173:5173"
     depends_on:
