@@ -1,0 +1,43 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to staging server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            set -e
+            echo "=== Starting Staging Deployment ==="
+            
+            cd /opt/openclaw-hosting
+            
+            # Pull latest code
+            git fetch origin develop
+            git reset --hard origin/develop
+            
+            # Install and build
+            pnpm install --frozen-lockfile
+            pnpm build
+            
+            # Run migrations
+            pnpm db:migrate
+            
+            # Reload services
+            pm2 reload openclaw-api-staging --update-env
+            
+            echo "=== Staging Deployment Complete ==="

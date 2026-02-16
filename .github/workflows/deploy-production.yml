@@ -1,0 +1,60 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            set -e
+            echo "=== Starting Production Deployment ==="
+            
+            cd /opt/openclaw-hosting
+            
+            # Pull latest code
+            echo "[1/6] Pulling latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Install dependencies
+            echo "[2/6] Installing dependencies..."
+            pnpm install --frozen-lockfile
+            
+            # Build applications
+            echo "[3/6] Building applications..."
+            pnpm build
+            
+            # Run database migrations
+            echo "[4/6] Running database migrations..."
+            pnpm db:migrate
+            
+            # Reload PM2 processes (zero-downtime)
+            echo "[5/6] Reloading API server..."
+            pm2 reload openclaw-api --update-env
+            
+            # Health check
+            echo "[6/6] Running health check..."
+            sleep 5
+            if curl -sf http://localhost:2222/health > /dev/null; then
+              echo "✅ Deployment successful!"
+            else
+              echo "❌ Health check failed!"
+              exit 1
+            fi
+            
+            echo "=== Deployment Complete ==="
