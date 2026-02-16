@@ -1,0 +1,57 @@
+{
+  "name": "@openclaw/skill-aws-mcp",
+  "version": "1.0.0",
+  "description": "AWS MCP Skill - AWS services integration with Model Context Protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/server.js",
+    "test": "jest",
+    "test:integration": "jest --config jest.integration.config.js",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "keywords": [
+    "aws",
+    "mcp",
+    "model-context-protocol",
+    "s3",
+    "ec2",
+    "lambda",
+    "cloudwatch",
+    "iam",
+    "cost-explorer"
+  ],
+  "author": "OpenClaw",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-cloudwatch-logs": "^3.450.0",
+    "@aws-sdk/client-cost-explorer": "^3.450.0",
+    "@aws-sdk/client-ec2": "^3.450.0",
+    "@aws-sdk/client-iam": "^3.450.0",
+    "@aws-sdk/client-lambda": "^3.450.0",
+    "@aws-sdk/client-s3": "^3.450.0",
+    "@aws-sdk/client-sts": "^3.450.0",
+    "@aws-sdk/credential-providers": "^3.450.0",
+    "@aws-sdk/lib-storage": "^3.450.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.9.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

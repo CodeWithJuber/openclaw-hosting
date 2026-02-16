@@ -1,0 +1,37 @@
+{
+  "name": "kubernetes-mcp",
+  "version": "1.0.0",
+  "description": "Kubernetes MCP skill for OpenClaw - Manage K8s clusters via Model Context Protocol",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx kubernetes-mcp-server@latest",
+    "start:readonly": "npx kubernetes-mcp-server@latest --read-only",
+    "start:http": "npx kubernetes-mcp-server@latest --port 8080"
+  },
+  "keywords": [
+    "kubernetes",
+    "k8s",
+    "mcp",
+    "openclaw",
+    "skill",
+    "cluster-management",
+    "devops",
+    "containers"
+  ],
+  "author": "OpenClaw",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "kubernetes-mcp-server": ">=0.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openclaw/skills/kubernetes-mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/containers/kubernetes-mcp-server/issues"
+  },
+  "homepage": "https://github.com/containers/kubernetes-mcp-server"
+}
