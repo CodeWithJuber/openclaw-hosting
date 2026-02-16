@@ -2,22 +2,28 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
 COPY package*.json ./
-RUN npm install
+COPY pnpm-lock.yaml* ./
+
+# Install dependencies
+RUN pnpm install
 
 # Copy source
 COPY . .
 
 # Build
-RUN npm run build
+RUN pnpm run build
 
 # Expose port
 EXPOSE 2222
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:2222/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:2222/health || exit 1
 
 # Start
 CMD ["node", "dist/index.js"]
