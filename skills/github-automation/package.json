@@ -1,0 +1,27 @@
+{
+  "name": "github-automation",
+  "version": "1.0.0",
+  "description": "Autonomous GitHub engineering - PR reviews, issue management, auto-deploy",
+  "main": "index.js",
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "review": "node scripts/review-pr.js",
+    "triage": "node scripts/triage-issues.js",
+    "deploy": "node scripts/auto-deploy.js",
+    "release": "node scripts/create-release.js"
+  },
+  "keywords": [
+    "github",
+    "automation",
+    "pr-review",
+    "issue-management",
+    "auto-deploy",
+    "openclaw"
+  ],
+  "author": "OpenClaw Hosting",
+  "license": "MIT",
+  "dependencies": {
+    "@octokit/rest": "^20.0.0",
+    "simple-git": "^3.20.0"
+  }
+}
