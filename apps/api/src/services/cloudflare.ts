@@ -214,7 +214,7 @@ export class CloudflareService {
    */
   async verifyZone(): Promise<boolean> {
     try {
-      const response = await this.request(`{/zones/${this.zoneId}`);
+      const response = await this.request(`/zones/${this.zoneId}`);
       return response.success;
     } catch {
       return false;

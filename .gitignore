@@ -2,19 +2,18 @@
 node_modules/
 .pnp
 .pnp.js
-.yarn/install-state.gz
 
 # Build outputs
 dist/
 build/
+.next/
+out/
 *.tsbuildinfo
 
-# Environment variables
+# Environment files
 .env
 .env.local
 .env.*.local
-.env.development
-.env.test
 .env.production
 
 # Logs
@@ -29,6 +28,9 @@ lerna-debug.log*
 # Testing
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
 
 # IDEs and editors
 .vscode/*
@@ -39,29 +41,20 @@ coverage/
 *.swo
 *~
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 
 # OS files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
+
+# Turbo
+.turbo/
+
+# Docker
+.docker/
 
 # Database
 *.db
 *.sqlite
 *.sqlite3
-
-# Docker
-.dockerignore
-docker-compose.override.yml
 
 # Misc
 .cache/
@@ -71,26 +64,10 @@ docker-compose.override.yml
 *.seed
 *.pid.lock
 
-# PHP (for WHMCS module)
-/vendor/
-composer.lock
+# PHP (WHMCS module)
+modules/whmcs/**/vendor/
+modules/whmcs/**/composer.lock
+modules/whmcs/**/.phpunit.result.cache
 
-# Playwright
-test-results/
-playwright-report/
-playwright/.cache/
-
-# Vitest
-*.vitest-temp.json
-
-# Turbo
-.turbo/
-
-# Vercel
-.vercel/
-
-# Cloudflare
-.wrangler/
-
-# Hetzner
-.hetzner/
+# Local development
+*.local

@@ -4,13 +4,16 @@
 
 set -e
 
+# Ensure non-interactive mode
+export DEBIAN_FRONTEND=noninteractive
+
 echo "=== OpenClaw Hosting Server Setup ==="
 echo "Starting configuration..."
 
 # Update system
 echo "[1/8] Updating system packages..."
 apt-get update
-apt-get upgrade -y
+apt-get upgrade -y -o Dpkg::Options::="--force-confold"
 
 # Install essential packages
 echo "[2/8] Installing essential packages..."
@@ -31,15 +34,16 @@ apt-get install -y \
 # Install Docker
 echo "[3/8] Installing Docker..."
 install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-chmod a+r /etc/apt/keyrings/docker.gpg
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Add ubuntu user to docker group
+# Add ubuntu user to docker group (create if doesn't exist)
+id -u ubuntu &>/dev/null || useradd -m -s /bin/bash ubuntu
 usermod -aG docker ubuntu
 
 # Install Node.js 22
@@ -89,7 +93,7 @@ ufw status verbose
 # Create app directory
 echo "[8/8] Creating application directory..."
 mkdir -p /opt/openclaw-hosting
-chown ubuntu:ubuntu /opt/openclaw-hosting
+chown ubuntu:ubuntu /opt/openclaw-hosting 2>/dev/null || chown root:root /opt/openclaw-hosting
 
 # Create a basic environment file template
 cat > /opt/openclaw-hosting/.env.example << 'EOF'

@@ -1,6 +1,13 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+interface DropdownMenuContextType {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+const DropdownMenuContext = React.createContext<DropdownMenuContextType | null>(null);
+
 const DropdownMenu = ({
   children,
 }: {
@@ -13,11 +20,6 @@ const DropdownMenu = ({
     </DropdownMenuContext.Provider>
   );
 };
-
-const DropdownMenuContext = React.createContext<{
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}> | null>(null);
 
 const useDropdownMenu = () => {
   const context = React.useContext(DropdownMenuContext);

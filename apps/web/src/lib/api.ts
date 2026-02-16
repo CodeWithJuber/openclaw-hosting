@@ -46,8 +46,15 @@ class APIClient {
     const url = `${API_URL}${endpoint}`;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...options.headers,
     };
+
+    if (options.headers) {
+      Object.entries(options.headers).forEach(([key, value]) => {
+        if (typeof value === "string") {
+          headers[key] = value;
+        }
+      });
+    }
 
     const token = this.getToken();
     if (token) {

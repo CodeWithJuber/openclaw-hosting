@@ -131,7 +131,7 @@ export class HetznerService {
   }
 
   async getServer(id: number): Promise<{ server: HetznerServer }> {
-    return this.request(`{/servers/${id}`);
+    return this.request(`/servers/${id}`);
   }
 
   async listServers(labels?: Record<string, string>): Promise<{ servers: HetznerServer[] }> {

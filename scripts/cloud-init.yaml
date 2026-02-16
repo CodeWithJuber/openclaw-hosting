@@ -1,0 +1,384 @@
+#cloud-config
+# OpenClaw VPS Provisioning Template
+# Rendered by: Agent 2 (API)
+# Used by: Hetzner Cloud API
+
+hostname: openclaw-{{SUBDOMAIN}}
+manage_etc_hosts: true
+fqdn: {{SUBDOMAIN}}.{{DOMAIN}}
+
+users:
+  - name: openclaw
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    home: /home/openclaw
+    ssh_authorized_keys:
+      - {{SSH_PUBLIC_KEY}}
+
+packages:
+  - curl
+  - wget
+  - git
+  - nginx
+  - ufw
+  - fail2ban
+  - certbot
+  - python3-certbot-nginx
+  - prometheus-node-exporter
+  - software-properties-common
+  - apt-transport-https
+  - ca-certificates
+  - gnupg
+  - lsb-release
+
+package_update: true
+package_upgrade: true
+package_reboot_if_required: false
+
+write_files:
+  # OpenClaw systemd service
+  - path: /etc/systemd/system/openclaw.service
+    content: |
+      [Unit]
+      Description=OpenClaw Gateway
+      Documentation=https://docs.openclaw.ai
+      After=network.target
+      Wants=network.target
+
+      [Service]
+      Type=simple
+      User=openclaw
+      Group=openclaw
+      WorkingDirectory=/home/openclaw
+      Environment="HOME=/home/openclaw"
+      Environment="OPENCLAW_PORT={{GATEWAY_PORT}}"
+      Environment="OPENCLAW_CALLBACK_URL={{CALLBACK_URL}}"
+      Environment="OPENCLAW_CALLBACK_TOKEN={{CALLBACK_TOKEN}}"
+      Environment="NODE_ENV=production"
+      ExecStart=/usr/bin/openclaw gateway start
+      ExecReload=/bin/kill -HUP $MAINPID
+      Restart=always
+      RestartSec=10
+      StandardOutput=journal
+      StandardError=journal
+      SyslogIdentifier=openclaw
+
+      [Install]
+      WantedBy=multi-user.target
+    permissions: '0644'
+    owner: root:root
+
+  # Nginx reverse proxy configuration
+  - path: /etc/nginx/sites-available/openclaw
+    content: |
+      # HTTP server - redirect to HTTPS
+      server {
+          listen 80;
+          listen [::]:80;
+          server_name {{SUBDOMAIN}}.{{DOMAIN}};
+          
+          # Let's Encrypt challenge
+          location /.well-known/acme-challenge/ {
+              root /var/www/certbot;
+          }
+          
+          location / {
+              return 301 https://$server_name$request_uri;
+          }
+      }
+
+      # HTTPS server
+      server {
+          listen 443 ssl http2;
+          listen [::]:443 ssl http2;
+          server_name {{SUBDOMAIN}}.{{DOMAIN}};
+
+          # SSL certificates (will be created by certbot)
+          ssl_certificate /etc/letsencrypt/live/{{SUBDOMAIN}}.{{DOMAIN}}/fullchain.pem;
+          ssl_certificate_key /etc/letsencrypt/live/{{SUBDOMAIN}}.{{DOMAIN}}/privkey.pem;
+          
+          # Modern SSL configuration
+          ssl_protocols TLSv1.2 TLSv1.3;
+          ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
+          ssl_prefer_server_ciphers off;
+          ssl_session_cache shared:SSL:10m;
+          ssl_session_timeout 1d;
+          ssl_session_tickets off;
+          
+          # Security headers
+          add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+          add_header X-Frame-Options "DENY" always;
+          add_header X-Content-Type-Options "nosniff" always;
+          add_header X-XSS-Protection "1; mode=block" always;
+          add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+          # Proxy to OpenClaw gateway
+          location / {
+              proxy_pass http://127.0.0.1:{{GATEWAY_PORT}};
+              proxy_http_version 1.1;
+              
+              # WebSocket support
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection "upgrade";
+              
+              # Standard proxy headers
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+              proxy_set_header X-Forwarded-Host $host;
+              proxy_set_header X-Forwarded-Port $server_port;
+              
+              # Timeouts
+              proxy_connect_timeout 60s;
+              proxy_send_timeout 60s;
+              proxy_read_timeout 60s;
+          }
+          
+          # Health check endpoint (bypass auth)
+          location /health {
+              proxy_pass http://127.0.0.1:{{GATEWAY_PORT}}/health;
+              proxy_set_header Host $host;
+              access_log off;
+          }
+      }
+    permissions: '0644'
+    owner: root:root
+
+  # OpenClaw configuration file
+  - path: /home/openclaw/.openclaw/openclaw.json
+    content: |
+      {
+        "gateway": {
+          "http": {
+            "port": {{GATEWAY_PORT}},
+            "host": "127.0.0.1"
+          },
+          "auth": {
+            "tokenExpiry": "24h"
+          }
+        },
+        "channels": {
+          "telegram": { "enabled": false },
+          "discord": { "enabled": false },
+          "whatsapp": { "enabled": false },
+          "slack": { "enabled": false }
+        },
+        "logging": {
+          "level": "info",
+          "format": "json"
+        }
+      }
+    permissions: '0600'
+    owner: openclaw:openclaw
+    defer: true
+
+  # Health check and callback script
+  - path: /usr/local/bin/openclaw-health-check.sh
+    content: |
+      #!/bin/bash
+      # OpenClaw Health Check & Callback Script
+      # Runs every 2 minutes via cron
+      
+      set -e
+      
+      GATEWAY_URL="http://127.0.0.1:{{GATEWAY_PORT}}/health"
+      CALLBACK_URL="{{CALLBACK_URL}}"
+      CALLBACK_TOKEN="{{CALLBACK_TOKEN}}"
+      CALLBACK_SENT_FILE="/var/lib/openclaw/callback-sent"
+      LOG_FILE="/var/log/openclaw/health-check.log"
+      
+      # Ensure log directory exists
+      mkdir -p /var/log/openclaw
+      
+      log() {
+          echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+      }
+      
+      # Check if OpenClaw is healthy
+      if curl -sf "$GATEWAY_URL" > /dev/null 2>&1; then
+          log "INFO: OpenClaw gateway is healthy"
+          
+          # Send ready callback (only once)
+          if [ ! -f "$CALLBACK_SENT_FILE" ]; then
+              log "INFO: Sending ready callback to orchestration API..."
+              
+              # Get OpenClaw version
+              VERSION=$(openclaw --version 2>/dev/null || echo "unknown")
+              
+              # Send callback
+              if curl -sf -X POST "$CALLBACK_URL" \
+                  -H "Content-Type: application/json" \
+                  -H "X-Callback-Token: $CALLBACK_TOKEN" \
+                  -d "{\"openclaw_version\": \"$VERSION\", \"gateway_port\": {{GATEWAY_PORT}}, \"status\": \"ready\"}" > /dev/null 2>&1; then
+                  
+                  mkdir -p /var/lib/openclaw
+                  touch "$CALLBACK_SENT_FILE"
+                  log "INFO: Callback sent successfully"
+              else
+                  log "ERROR: Failed to send callback"
+              fi
+          fi
+          
+          exit 0
+      else
+          log "WARNING: OpenClaw gateway is not responding"
+          exit 1
+      fi
+    permissions: '0755'
+    owner: root:root
+
+  # Node exporter config for Prometheus metrics
+  - path: /etc/default/prometheus-node-exporter
+    content: |
+      # Prometheus Node Exporter configuration
+      ARGS="--web.listen-address=:9100 --web.telemetry-path=/metrics --collector.systemd"
+    permissions: '0644'
+    owner: root:root
+
+  # Fail2ban configuration for SSH
+  - path: /etc/fail2ban/jail.local
+    content: |
+      [DEFAULT]
+      bantime = 3600
+      findtime = 600
+      maxretry = 3
+      
+      [sshd]
+      enabled = true
+      port = ssh
+      filter = sshd
+      logpath = /var/log/auth.log
+      maxretry = 3
+    permissions: '0644'
+    owner: root:root
+
+  # Kernel hardening sysctl config
+  - path: /etc/sysctl.d/99-security.conf
+    content: |
+      # Kernel security hardening
+      net.ipv4.tcp_syncookies = 1
+      net.ipv4.conf.all.rp_filter = 1
+      net.ipv4.conf.default.rp_filter = 1
+      net.ipv4.conf.all.accept_redirects = 0
+      net.ipv4.conf.default.accept_redirects = 0
+      net.ipv4.conf.all.send_redirects = 0
+      net.ipv4.conf.default.send_redirects = 0
+      net.ipv4.icmp_echo_ignore_broadcasts = 1
+      net.ipv4.icmp_ignore_bogus_error_responses = 1
+      kernel.randomize_va_space = 2
+      fs.protected_hardlinks = 1
+      fs.protected_symlinks = 1
+    permissions: '0644'
+    owner: root:root
+
+runcmd:
+  # Create necessary directories
+  - mkdir -p /var/www/certbot /var/lib/openclaw /var/log/openclaw /home/openclaw/.openclaw
+  - chown -R openclaw:openclaw /home/openclaw
+  - chmod 700 /home/openclaw/.openclaw
+
+  # Install Node.js 22 LTS
+  - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+  - apt-get install -y nodejs
+  - npm install -g npm@latest
+
+  # Install OpenClaw globally
+  - npm install -g openclaw@latest
+
+  # Verify installations
+  - node --version
+  - npm --version
+  - openclaw --version
+
+  # Configure and start node_exporter
+  - systemctl daemon-reload
+  - systemctl enable prometheus-node-exporter
+  - systemctl start prometheus-node-exporter
+
+  # Configure Nginx
+  - ln -sf /etc/nginx/sites-available/openclaw /etc/nginx/sites-enabled/openclaw
+  - rm -f /etc/nginx/sites-enabled/default
+  - nginx -t && systemctl reload nginx
+
+  # Configure firewall (UFW)
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow ssh comment 'SSH access'
+  - ufw allow 'Nginx Full' comment 'HTTP/HTTPS'
+  - ufw allow from {{API_SERVER_IP}} to any port 9100 comment 'Metrics from API server only'
+  - ufw --force enable
+
+  # Security hardening - SSH
+  - sed -i 's/^#*PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+  - sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+  - sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+  - systemctl restart sshd
+
+  # Apply kernel hardening
+  - sysctl -p /etc/sysctl.d/99-security.conf
+
+  # Configure and enable fail2ban
+  - systemctl enable fail2ban
+  - systemctl start fail2ban
+
+  # Configure unattended security updates
+  - apt-get install -y unattended-upgrades apt-listchanges
+  - |
+    cat > /etc/apt/apt.conf.d/50unattended-upgrades << 'EOF'
+    Unattended-Upgrade::Allowed-Origins {
+        "${distro_id}:${distro_codename}-security";
+    };
+    Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+    Unattended-Upgrade::MinimalSteps "true";
+    Unattended-Upgrade::InstallOnShutdown "false";
+    Unattended-Upgrade::Remove-Unused-Dependencies "true";
+    Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+    Unattended-Upgrade::Automatic-Reboot "false";
+    EOF
+  - dpkg-reconfigure -plow unattended-upgrades -fnoninteractive
+
+  # Obtain SSL certificate
+  - |
+    certbot certonly --nginx --non-interactive --agree-tos \
+      --email admin@{{DOMAIN}} \
+      -d {{SUBDOMAIN}}.{{DOMAIN}} \
+      --deploy-hook "systemctl reload nginx" || true
+
+  # Enable and start OpenClaw service
+  - systemctl daemon-reload
+  - systemctl enable openclaw
+  - systemctl start openclaw
+
+  # Setup cron job for health checks
+  - |
+    echo "*/2 * * * * root /usr/local/bin/openclaw-health-check.sh" > /etc/cron.d/openclaw-health
+    chmod 644 /etc/cron.d/openclaw-health
+
+  # Final health check and callback
+  - sleep 5
+  - /usr/local/bin/openclaw-health-check.sh || true
+
+  # Log completion
+  - echo "OpenClaw VPS provisioning completed at $(date)" > /var/log/openclaw/provision.log
+
+final_message: |
+  OpenClaw VPS provisioning is complete!
+  
+  Server: {{SUBDOMAIN}}.{{DOMAIN}}
+  Gateway Port: {{GATEWAY_PORT}}
+  
+  Services enabled:
+  - OpenClaw Gateway (systemd)
+  - Nginx Reverse Proxy
+  - Prometheus Node Exporter
+  - Fail2ban
+  - Unattended Security Updates
+  
+  Security features:
+  - UFW Firewall (ports 22, 80, 443 open)
+  - SSH key-only authentication
+  - Automatic SSL certificates (Let's Encrypt)
+  - Kernel hardening applied
+  
+  The instance will notify the orchestration API when ready.

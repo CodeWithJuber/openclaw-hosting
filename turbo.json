@@ -1,0 +1,86 @@
+name: openclaw-hosting
+
+# Turborepo pipeline configuration
+# https://turbo.build/repo/docs/reference/configuration
+
+$schema: "https://turbo.build/schema.json"
+
+globalDependencies:
+  - ".env"
+  - ".env.*"
+  - "tsconfig.json"
+
+globalEnv:
+  - NODE_ENV
+  - API_PORT
+  - DATABASE_URL
+  - JWT_SECRET
+  - HETZNER_API_TOKEN
+  - CLOUDFLARE_API_TOKEN
+  - CLOUDFLARE_ZONE_ID
+  - CLOUDFLARE_DOMAIN
+
+tasks:
+  # Build pipeline
+  build:
+    dependsOn: ["^build"]
+    outputs: ["dist/**", ".next/**", "!.next/cache/**"]
+    env:
+      - NODE_ENV
+
+  # Development servers
+  dev:
+    cache: false
+    persistent: true
+    env:
+      - NODE_ENV
+      - API_PORT
+      - DATABASE_URL
+      - JWT_SECRET
+      - VITE_API_URL
+
+  # Linting
+  lint:
+    dependsOn: ["^build"]
+    outputs: []
+
+  # Type checking
+  typecheck:
+    dependsOn: ["^build"]
+    outputs: []
+
+  # Testing
+  test:
+    dependsOn: ["^build"]
+    outputs: ["coverage/**"]
+    env:
+      - NODE_ENV
+      - DATABASE_URL
+
+  # Database operations
+  db:generate:
+    cache: false
+    outputs: ["migrations/**"]
+
+  db:migrate:
+    cache: false
+    dependsOn: ["db:generate"]
+
+  db:push:
+    cache: false
+
+  db:studio:
+    cache: false
+    persistent: true
+
+  # Docker operations
+  docker:up:
+    cache: false
+    persistent: true
+
+  docker:down:
+    cache: false
+
+  docker:build:
+    cache: false
+    dependsOn: ["build"]
