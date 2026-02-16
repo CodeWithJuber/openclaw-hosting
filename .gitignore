@@ -78,3 +78,4 @@ secrets/
 *.key
 jwt-*.pem
 .env.staging
+api_credentials.md
