@@ -53,8 +53,8 @@ services:
   # API Server - Lightweight
   api:
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./apps/api/Dockerfile
     container_name: openclaw-api
     environment:
       - NODE_ENV=production
@@ -84,12 +84,12 @@ services:
 
   # Dashboard - Static files (nginx)
   dashboard:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
     container_name: openclaw-dashboard
-    volumes:
-      - ./apps/web/dist:/usr/share/nginx/html:ro
     ports:
-      - "5173:80"
+      - "5173:5173"
     depends_on:
       - api
     networks:
