@@ -71,3 +71,10 @@ modules/whmcs/**/.phpunit.result.cache
 
 # Local development
 *.local
+
+# Secrets - NEVER commit
+secrets/
+*.pem
+*.key
+jwt-*.pem
+.env.staging
