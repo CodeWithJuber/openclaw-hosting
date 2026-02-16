@@ -1,3 +1,4 @@
+# Production Docker Compose - Using Pre-built Images
 version: '3.8'
 
 services:
@@ -7,7 +8,7 @@ services:
     container_name: openclaw-postgres
     environment:
       POSTGRES_USER: openclaw
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-openclaw_secure_password}
       POSTGRES_DB: openclaw_hosting
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -50,25 +51,28 @@ services:
       - openclaw-network
     restart: unless-stopped
 
-  # API Server - Lightweight
+  # API Server - Node.js directly
   api:
-    build:
-      context: .
-      dockerfile: ./apps/api/Dockerfile
+    image: node:22-alpine
     container_name: openclaw-api
+    working_dir: /app
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://openclaw:${DB_PASSWORD}@postgres:5432/openclaw_hosting
+      - DATABASE_URL=postgresql://openclaw:${DB_PASSWORD:-openclaw_secure_password}@postgres:5432/openclaw_hosting
       - REDIS_URL=redis://redis:6379
-      - HETZNER_API_TOKEN=${HETZNER_API_TOKEN}
-      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
-      - JWT_PRIVATE_KEY_PATH=/app/secrets/jwt-private.pem
-      - JWT_PUBLIC_KEY_PATH=/app/secrets/jwt-public.pem
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - PORT=2222
+      - HOST=0.0.0.0
     volumes:
+      - .:/app
+      - /app/node_modules
       - ./secrets:/app/secrets:ro
     ports:
       - "2222:2222"
+    command: >
+      sh -c "npm install -g pnpm && 
+             pnpm install --force && 
+             pnpm --filter api build && 
+             pnpm --filter api start"
     depends_on:
       postgres:
         condition: service_healthy
@@ -82,12 +86,13 @@ services:
         limits:
           memory: 1G
 
-  # Dashboard - Static files (nginx)
+  # Dashboard - Nginx serving static files
   dashboard:
-    build:
-      context: .
-      dockerfile: ./apps/web/Dockerfile
+    image: nginx:alpine
     container_name: openclaw-dashboard
+    volumes:
+      - ./apps/web/dist:/usr/share/nginx/html:ro
+      - ./apps/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
       - "5173:5173"
     depends_on:
