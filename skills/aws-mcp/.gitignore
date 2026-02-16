@@ -1,0 +1,16 @@
+.DS_Store
+node_modules/
+dist/
+*.log
+.env
+.env.local
+.env.*.local
+coverage/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.aws/
+!.aws/config.example
+!.aws/credentials.example

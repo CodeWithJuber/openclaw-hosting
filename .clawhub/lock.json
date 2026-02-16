@@ -24,6 +24,14 @@
     "automation-workflows": {
       "version": "0.1.0",
       "installedAt": 1771251374761
+    },
+    "python": {
+      "version": "1.0.0",
+      "installedAt": 1771252175044
+    },
+    "skill-creator": {
+      "version": "0.1.0",
+      "installedAt": 1771252215876
     }
   }
 }
