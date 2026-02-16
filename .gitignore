@@ -79,3 +79,4 @@ secrets/
 jwt-*.pem
 .env.staging
 api_credentials.md
+api_credentials.md
