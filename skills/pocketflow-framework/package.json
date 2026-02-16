@@ -1,0 +1,7 @@
+{
+  "name": "pocketflow-framework",
+  "version": "1.0.0",
+  "description": "100-line LLM framework for building agent workflows",
+  "main": "index.js",
+  "dependencies": {}
+}
